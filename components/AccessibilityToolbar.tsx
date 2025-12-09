@@ -8,6 +8,9 @@ export const AccessibilityToolbar: React.FC = () => {
     isBionic, toggleBionic,
     isSyllables, toggleSyllables,
     isRuler, toggleRuler,
+    isMicroChunking, toggleMicroChunking,
+    isFocusTimer, toggleFocusTimer,
+    isZenMode, toggleZenMode,
     bgColor, setBgColor,
     lineHeight, setLineHeight
   } = useAccessibility();
@@ -15,10 +18,10 @@ export const AccessibilityToolbar: React.FC = () => {
   if (!isToolbarOpen) return null;
 
   return (
-    <div className="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-fade-in-up">
-      <div className="bg-slate-800 px-4 py-3 flex justify-between items-center">
+    <div className="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-fade-in-up max-h-[80vh] overflow-y-auto">
+      <div className="bg-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-10">
         <h3 className="text-white font-bold flex items-center">
-          <span className="text-xl mr-2">♿</span> Dyslexia Support
+          <span className="text-xl mr-2">♿</span> Access Tools
         </h3>
         <button onClick={toggleToolbar} className="text-slate-400 hover:text-white">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -26,35 +29,73 @@ export const AccessibilityToolbar: React.FC = () => {
       </div>
       
       <div className="p-5 space-y-6">
-        {/* Toggles */}
+        {/* ADHD Focus Tools Section */}
+        <div className="pb-6 border-b border-slate-100">
+           <h4 className="text-xs text-indigo-500 font-bold uppercase mb-3 flex items-center">
+             <span className="mr-1">🧠</span> ADHD Focus Tools
+           </h4>
+           <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-700 font-medium text-sm">Micro-Chunking</span>
+                <button 
+                  onClick={toggleMicroChunking}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${isMicroChunking ? 'bg-indigo-500' : 'bg-slate-300'}`}
+                >
+                  <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isMicroChunking ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-700 font-medium text-sm">Smart Focus Timer</span>
+                <button 
+                  onClick={toggleFocusTimer}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${isFocusTimer ? 'bg-indigo-500' : 'bg-slate-300'}`}
+                >
+                  <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isFocusTimer ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-700 font-medium text-sm">Zen Reading Mode</span>
+                <button 
+                  onClick={toggleZenMode}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${isZenMode ? 'bg-indigo-500' : 'bg-slate-300'}`}
+                >
+                  <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isZenMode ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+           </div>
+        </div>
+
+        {/* Dyslexia Toggles */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-slate-700 font-medium">Bionic Reading</span>
+            <span className="text-slate-700 font-medium text-sm">Bionic Reading</span>
             <button 
               onClick={toggleBionic}
-              className={`w-12 h-6 rounded-full relative transition-colors ${isBionic ? 'bg-teal-500' : 'bg-slate-300'}`}
+              className={`w-10 h-5 rounded-full relative transition-colors ${isBionic ? 'bg-teal-500' : 'bg-slate-300'}`}
             >
-              <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${isBionic ? 'left-7' : 'left-1'}`} />
+              <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isBionic ? 'left-6' : 'left-1'}`} />
             </button>
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-slate-700 font-medium">Syllable Breakdown</span>
+            <span className="text-slate-700 font-medium text-sm">Syllable Breakdown</span>
             <button 
               onClick={toggleSyllables}
-              className={`w-12 h-6 rounded-full relative transition-colors ${isSyllables ? 'bg-teal-500' : 'bg-slate-300'}`}
+              className={`w-10 h-5 rounded-full relative transition-colors ${isSyllables ? 'bg-teal-500' : 'bg-slate-300'}`}
             >
-              <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${isSyllables ? 'left-7' : 'left-1'}`} />
+              <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isSyllables ? 'left-6' : 'left-1'}`} />
             </button>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-slate-700 font-medium">Focus Ruler</span>
+            <span className="text-slate-700 font-medium text-sm">Focus Ruler</span>
             <button 
               onClick={toggleRuler}
-              className={`w-12 h-6 rounded-full relative transition-colors ${isRuler ? 'bg-teal-500' : 'bg-slate-300'}`}
+              className={`w-10 h-5 rounded-full relative transition-colors ${isRuler ? 'bg-teal-500' : 'bg-slate-300'}`}
             >
-              <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${isRuler ? 'left-7' : 'left-1'}`} />
+              <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${isRuler ? 'left-6' : 'left-1'}`} />
             </button>
           </div>
         </div>

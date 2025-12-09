@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { VoiceGender } from '../types';
 import { useAccessibility } from '../contexts/AccessibilityContext';
-import { processText } from '../utils/accessibilityUtils';
+import { processText, applyMicroChunking, cleanTextForTTS } from '../utils/accessibilityUtils';
 import { ReadingRuler } from './ReadingRuler';
 
 interface StoryViewProps {
@@ -14,8 +14,9 @@ interface StoryViewProps {
 export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceGender }) => {
   const [showBrain, setShowBrain] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRate, setSpeechRate] = useState(0.9);
   
-  const { isBionic, isSyllables, isRuler, bgColor, lineHeight } = useAccessibility();
+  const { isBionic, isSyllables, isRuler, isMicroChunking, bgColor, lineHeight } = useAccessibility();
   
   // Determine text color based on background
   const isDarkBg = bgColor === '#1e1e1e';
@@ -38,7 +39,9 @@ export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceG
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(content);
+    // Clean text to remove emojis/markdown for clear audio
+    const cleanContent = cleanTextForTTS(content);
+    const utterance = new SpeechSynthesisUtterance(cleanContent);
     
     // Voice selection logic
     const voices = window.speechSynthesis.getVoices();
@@ -66,7 +69,7 @@ export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceG
 
     if (preferredVoice) utterance.voice = preferredVoice;
 
-    utterance.rate = 0.9; 
+    utterance.rate = speechRate; 
     utterance.pitch = 1;
     
     utterance.onend = () => setIsSpeaking(false);
@@ -76,7 +79,10 @@ export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceG
     setIsSpeaking(true);
   };
 
-  const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+  // Pre-process content for MicroChunking if enabled
+  const displayContent = isMicroChunking ? applyMicroChunking(content) : content;
+
+  const paragraphs = displayContent.split('\n').filter(p => p.trim() !== '');
 
   return (
     <div 
@@ -86,10 +92,27 @@ export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceG
       {isRuler && <ReadingRuler />}
 
       {/* Controls Header */}
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b pb-4 ${isDarkBg ? 'border-slate-700' : 'border-slate-100'}`}>
+      <div className={`flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4 border-b pb-4 ${isDarkBg ? 'border-slate-700' : 'border-slate-100'}`}>
         <h2 className={`text-xl font-bold hidden sm:block ${headingColorClass}`}>Concept Narrative</h2>
         
-        <div className="flex items-center space-x-6 w-full sm:w-auto justify-between sm:justify-end relative z-50">
+        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto justify-between xl:justify-end relative z-50">
+          
+          {/* Audio Speed Slider */}
+          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border ${isDarkBg ? 'bg-slate-800 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+            <span className={`text-[10px] uppercase font-bold tracking-wider ${isDarkBg ? 'text-slate-400' : 'text-slate-500'}`}>
+              Pace: {speechRate.toFixed(1)}x
+            </span>
+            <input
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.1"
+              value={speechRate}
+              onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+              className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+            />
+          </div>
+
           {/* TTS Button */}
           <button 
             onClick={handleSpeak}
@@ -134,18 +157,17 @@ export const StoryView: React.FC<StoryViewProps> = ({ content, reasoning, voiceG
           }
 
           // 3. Apply accessibility transforms (Bionic/Syllables) if enabled
-          // Note: Applying on top of HTML is tricky. For this demo, we apply to non-tag text if possible
-          // But simple implementation: strip tags, process, re-insert? 
-          // Safer approach for demo: Just process the text content if no bold tags, 
-          // or process the whole string assuming Utils handle tags gracefully.
           if (isBionic || isSyllables) {
              formattedHtml = processText(formattedHtml, isBionic, isSyllables);
           }
 
+          // Handling Bullet points from MicroChunking
+          const isBullet = para.trim().startsWith('•');
+          
           return (
             <p 
               key={idx} 
-              className={`leading-relaxed mb-4 ${textColorClass}`}
+              className={`leading-relaxed ${isBullet ? 'pl-4 border-l-2 border-teal-200 ml-2 mb-3' : 'mb-4'} ${textColorClass}`}
               style={{ lineHeight: lineHeight }}
               dangerouslySetInnerHTML={{ __html: formattedHtml }}
             />

@@ -9,6 +9,7 @@ import { generateStory, generateQuiz, generateChatResponse } from './services/ge
 import { AppMode, AnalysisState, AppLanguage, ExplanationStyle, VoiceGender, ChatMessage, UserInterest } from './types';
 import { AccessibilityProvider, useAccessibility } from './contexts/AccessibilityContext';
 import { AccessibilityToolbar } from './components/AccessibilityToolbar';
+import { FocusTimer } from './components/FocusTimer';
 
 // Main App Layout Component
 const AppContent = () => {
@@ -34,7 +35,7 @@ const AppContent = () => {
     quiz: null
   });
 
-  const { isToolbarOpen, toggleToolbar } = useAccessibility();
+  const { isToolbarOpen, toggleToolbar, isZenMode, isFocusTimer } = useAccessibility();
 
   useEffect(() => {
     if (!image) return;
@@ -151,12 +152,13 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-inter">
+    <div className={`min-h-screen bg-slate-50 flex flex-col font-inter transition-colors duration-500 ${isZenMode ? 'bg-slate-900' : ''}`}>
       <AccessibilityToolbar />
+      {isFocusTimer && <FocusTimer />}
       
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      {/* Header - Dimmed in Zen Mode */}
+      <header className={`bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none h-0 overflow-hidden' : 'h-16 opacity-100'}`}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center text-white font-bold shadow-teal-200 shadow-md">C</div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight">CogniVibe</h1>
@@ -168,10 +170,10 @@ const AppContent = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className={`flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-all duration-500 ${isZenMode ? 'max-w-4xl flex items-center justify-center' : 'max-w-[1600px]'}`}>
         
-        {/* Controls Toolbar */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center justify-between">
+        {/* Controls Toolbar - Hidden in Zen Mode */}
+        <div className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center justify-between transition-all duration-500 ${isZenMode ? 'hidden' : 'block'}`}>
             <div className="flex flex-wrap gap-4 items-center">
               {/* Language Dropdown */}
               <div className="flex flex-col">
@@ -255,9 +257,9 @@ const AppContent = () => {
             </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-250px)] min-h-[600px]">
-          {/* Left Panel: Upload Zone */}
-          <div className="lg:w-1/2 flex flex-col h-full">
+        <div className={`flex gap-6 min-h-[600px] transition-all duration-500 ${isZenMode ? 'flex-col justify-center' : 'flex-col lg:flex-row h-[calc(100vh-250px)]'}`}>
+          {/* Left Panel: Upload Zone - Hidden in Zen Mode */}
+          <div className={`lg:w-1/2 flex flex-col h-full transition-all duration-500 ${isZenMode ? 'hidden' : 'block'}`}>
             <ImageUploader 
               image={image} 
               onImageUpload={handleImageUpload} 
@@ -266,8 +268,8 @@ const AppContent = () => {
             />
           </div>
 
-          {/* Right Panel: Knowledge Display */}
-          <div className={`lg:w-1/2 flex flex-col bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden ${isDyslexicFont ? 'font-dyslexic' : ''}`}>
+          {/* Right Panel: Knowledge Display - Full width/Center in Zen Mode */}
+          <div className={`flex flex-col bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden transition-all duration-500 ${isDyslexicFont ? 'font-dyslexic' : ''} ${isZenMode ? 'w-full shadow-2xl scale-105 z-50 h-[80vh]' : 'lg:w-1/2 h-full'}`}>
             {/* Tabs */}
             <div className="flex border-b border-slate-100 flex-none">
               <button
@@ -327,8 +329,8 @@ const AppContent = () => {
               )}
             </div>
 
-            {/* Chat Interface (Tutor Companion) */}
-            {image && !isLoading && !error && (
+            {/* Chat Interface (Tutor Companion) - Hidden in Zen Mode */}
+            {image && !isLoading && !error && !isZenMode && (
                <div className="flex-none z-10">
                  <ChatInterface 
                    messages={chatHistory} 
@@ -340,7 +342,7 @@ const AppContent = () => {
           </div>
         </div>
 
-        {/* Accessibility FAB */}
+        {/* Accessibility FAB - Always visible */}
         <button 
           onClick={toggleToolbar}
           className="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-2xl hover:bg-slate-700 transition-all z-50 flex items-center gap-2 hover:scale-105"
