@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface AccessibilityState {
   isBionic: boolean;
@@ -8,6 +8,9 @@ interface AccessibilityState {
   isMicroChunking: boolean;
   isFocusTimer: boolean;
   isZenMode: boolean;
+  isADHDSupport: boolean;
+  isDyslexicFont: boolean;
+  isDarkMode: boolean;
   bgColor: string; // Hex or tailwind class logic
   lineHeight: number;
   isToolbarOpen: boolean;
@@ -17,6 +20,9 @@ interface AccessibilityState {
   toggleMicroChunking: () => void;
   toggleFocusTimer: () => void;
   toggleZenMode: () => void;
+  toggleADHDSupport: () => void;
+  toggleDyslexicFont: () => void;
+  toggleTheme: () => void;
   setBgColor: (color: string) => void;
   setLineHeight: (height: number) => void;
   toggleToolbar: () => void;
@@ -31,31 +37,48 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
   const [isMicroChunking, setIsMicroChunking] = useState(false);
   const [isFocusTimer, setIsFocusTimer] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
+  const [isADHDSupport, setIsADHDSupport] = useState(false);
+  const [isDyslexicFont, setIsDyslexicFont] = useState(false);
   
-  const [bgColor, setBgColor] = useState<string>('#FFFFFF'); // Default white
+  // Default to Dark Mode
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  // Default backgrounds based on theme
+  const [bgColor, setBgColor] = useState<string>('#2d2d2d'); 
   const [lineHeight, setLineHeight] = useState(1.6);
   const [isToolbarOpen, setIsToolbarOpen] = useState(false);
 
   const toggleBionic = () => setIsBionic(prev => !prev);
   const toggleSyllables = () => setIsSyllables(prev => !prev);
   const toggleRuler = () => {
-    setIsRuler(prev => {
-        // If turning OFF ruler, and Zen Mode is ON, we should probably keep it on? 
-        // Or user explicitly toggles. Let's strictly toggle.
-        return !prev;
-    });
+    setIsRuler(prev => !prev);
   };
   const toggleMicroChunking = () => setIsMicroChunking(prev => !prev);
   const toggleFocusTimer = () => setIsFocusTimer(prev => !prev);
   const toggleZenMode = () => {
       setIsZenMode(prev => {
           const newState = !prev;
-          // Zen mode automatically enables Ruler for focus if turning ON
           if (newState) setIsRuler(true);
           return newState;
       });
   };
+  const toggleADHDSupport = () => setIsADHDSupport(prev => !prev);
+  const toggleDyslexicFont = () => setIsDyslexicFont(prev => !prev);
   const toggleToolbar = () => setIsToolbarOpen(prev => !prev);
+
+  // Global Theme Toggle
+  const toggleTheme = () => {
+    setIsDarkMode(prev => {
+      const newMode = !prev;
+      // Automatically switch the content background color for better UX
+      if (newMode) {
+        setBgColor('#2d2d2d'); // Dark Panel Default
+      } else {
+        setBgColor('#ffffff'); // Light Panel Default
+      }
+      return newMode;
+    });
+  };
 
   return (
     <AccessibilityContext.Provider value={{
@@ -65,6 +88,9 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
       isMicroChunking,
       isFocusTimer,
       isZenMode,
+      isADHDSupport,
+      isDyslexicFont,
+      isDarkMode,
       bgColor,
       lineHeight,
       isToolbarOpen,
@@ -74,6 +100,9 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
       toggleMicroChunking,
       toggleFocusTimer,
       toggleZenMode,
+      toggleADHDSupport,
+      toggleDyslexicFont,
+      toggleTheme,
       setBgColor,
       setLineHeight,
       toggleToolbar

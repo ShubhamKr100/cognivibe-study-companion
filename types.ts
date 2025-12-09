@@ -2,6 +2,7 @@
 export enum AppMode {
   STORY = 'STORY',
   QUIZ = 'QUIZ',
+  MINDMAP = 'MINDMAP',
 }
 
 export enum AppLanguage {
@@ -34,6 +35,12 @@ export enum UserInterest {
   HARRY_POTTER = 'Harry Potter',
 }
 
+export enum SoundscapeType {
+  OFF = 'OFF',
+  BROWN_NOISE = 'BROWN_NOISE',
+  RAIN = 'RAIN',
+}
+
 export interface QuizQuestion {
   question: string;
   options: string[];
@@ -42,16 +49,41 @@ export interface QuizQuestion {
 }
 
 export interface StoryData {
+  tldr: string[]; // Array of 3 short bullet points
   content: string;
   reasoning: string;
+}
+
+export interface MindMapNode {
+  title: string;
+  description: string;
+}
+
+export interface MindMapData {
+  mainTopic: string;
+  subTopics: MindMapNode[];
 }
 
 export interface AnalysisState {
   story: StoryData | null;
   quiz: QuizQuestion[] | null;
+  mindMap: MindMapData | null;
 }
 
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+}
+
+export interface MagicStep {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+}
+
+export interface RapidQuizItem {
+  id: string;
+  question: string;
+  answer: string; // "True", "False", or short answer
+  explanation: string; // Short encouraging feedback
 }

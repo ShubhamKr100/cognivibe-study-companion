@@ -1,6 +1,8 @@
 
 export const applyBionicReading = (text: string): string => {
-  // Simple heuristic: Bold the first 40% of characters in words > 3 chars
+  // Bionic reading relies on spacing which is present in Latin/Cyrillic but not always in CJK.
+  // We apply a basic check to skip if the text seems to be predominantly CJK to avoid breaking layout,
+  // or just attempt it where spaces exist.
   return text.split(' ').map(word => {
     // Skip HTML tags or very short words
     if (word.startsWith('<') || word.length < 2) return word; 
@@ -16,6 +18,11 @@ export const applyBionicReading = (text: string): string => {
 };
 
 export const applySyllableBreakdown = (text: string): string => {
+  // Check if text contains latin characters. If not (e.g. Chinese, Hindi), skip syllable breakdown
+  // as the regex is tailored for English/Latin logic.
+  const hasLatinChar = /[a-zA-Z]/.test(text);
+  if (!hasLatinChar) return text;
+
   return text.split(' ').map(word => {
     // Skip short words or HTML tags
     if (word.length <= 6 || word.startsWith('<')) return word;
@@ -35,11 +42,12 @@ export const applyMicroChunking = (text: string): string => {
     if (p.startsWith('#') || p.length < 50) return p;
     
     // 2. Split sentences
-    const sentences = p.split(/(?<=[.!?])\s+/);
+    // Look for sentence terminators commonly used in various languages
+    const sentences = p.split(/(?<=[.!?。！？])\s*/);
     
     // If paragraph has multiple sentences, turn them into a bullet list (pseudo-markdown)
     if (sentences.length > 1) {
-       return sentences.map(s => `• ${s}`).join('\n\n');
+       return sentences.filter(s => s.trim().length > 0).map(s => `• ${s}`).join('\n\n');
     }
     
     return p;
